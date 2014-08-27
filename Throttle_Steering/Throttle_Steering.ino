@@ -1,8 +1,7 @@
 /*************************************
 *    Created by Lucas Jensen         *
-*    8/18/2014                       *
-*    visit blog:                     *
-*    ampd-project.blogspot.com       *
+*    8/20/2014                       *
+*  ampd-project.blogspot.com         *
 *************************************/
 
 #include <Servo.h>
@@ -13,97 +12,61 @@
 #define STEERING_IN 3
 #define BRAKE 5
 
-//need to use a volatile here since it is being called by an Interupt
-volatile unsigned long thTimerStart, stTimerStart;
-volatile int thPulseTime, stPulseTime;
-volatile int thLastInterruptTime, stLastInterruptTime;
+
+
 
 Servo Throttle;
-long throttle, steering;
+unsigned int thPulseTime, stPulseTime;
+int throttle, steering, pctThrottle, braking;
 int ctr = 20;
-
-void calcThrottleSig(){
-  thLastInterruptTime = micros();
-  
-  //if the pin goes HIGH, reoccrd the microseconds
-  if(digitalRead(THROTTLE_IN) == HIGH){
-    //reads in the start time
-    thTimerStart = micros();
-  }
-  //When the function returns on low enters here to calculate duration of high pulse
-  else{
-    if(thTimerStart > 0){
-      thPulseTime = ((volatile int)micros() - thTimerStart);
-      thTimerStart = 0;
-    }
-  }
-}
-
-void calcSteeringSig(){
-  stLastInterruptTime = micros();
-  
-  //if the pin goes HIGH, reoccrd the microseconds
-  if(digitalRead(THROTTLE_IN) == HIGH){
-    //reads in the start time
-    stTimerStart = micros();
-  }
-  //When the function returns on low enters here to calculate duration of high pulse
-  else{
-    if(stTimerStart > 0){
-      stPulseTime = ((volatile int)micros() - stTimerStart);
-      stTimerStart = 0;
-    }
-  }
-}
 
 
 void setup(){
   Throttle.attach(THROTTLE_OUT);
   pinMode(THROTTLE_IN, INPUT);
-  pinMode(THROTTLE_OUT, OUTPUT);
   pinMode(STEERING_IN, INPUT);
   pinMode(STEERING_OUT, OUTPUT);
   pinMode(BRAKE, OUTPUT);
   
-  thTimerStart = 0;
-  stTimerStart = 0;
-  attachInterrupt(0, calcThrottleSig, CHANGE);
-  attachInterrupt(1, calcSteeringSig, CHANGE);
+  analogWrite(BRAKE, 0);
   Throttle.write(35);
   analogWrite(STEERING_OUT, 127);
-  Serial.begin(115200);
+  Serial.begin(9600);
   delay(5000);
 }
 
 
 void loop(){
-  //this is used to find the angles used for the rheostat
-  /*if(ctr <= 67){
-    Throttle.write(ctr);
-    Serial.print("Angle of Servo = ");
-    Serial.print(ctr);
-    Serial.print("\n");
-    ctr++;
-  }
-  else{
-    ctr = 20;
-    Throttle.write(ctr);
-    Serial.print("Angle of Servo = ");
-    Serial.print(ctr);
-    Serial.print("\n");
-  } 
-  delay(1000); //10sec delay   this is the end of rheostat angle finder*/
-  
+  thPulseTime = pulseIn(THROTTLE_IN, HIGH);
   if(thPulseTime > 0){
-    throttle = map(thPulseTime, 1750, 2000, 35, 67);
+    throttle = map(thPulseTime, 1500, 2000, 35, 67);
+    Serial.print("throttle angle:   ");
+    Serial.print(throttle);
+    Serial.print("\n");
+    pctThrottle = map(thPulseTime, 1500, 2000, 0, 100);
+    Serial.print("Percent throttle:   ");
+    Serial.print(pctThrottle);
+    Serial.print("\n\n");
     Throttle.write(throttle);
   }
   
+  if(pctThrottle < 30){
+    braking = map(pctThrottle, 0, 30, 0, 255);
+    Serial.print("Braking PWM:   ");
+    Serial.print(braking);
+    Serial.print("\n\n");
+    analogWrite(BRAKE, braking);
+  }
+  
+  stPulseTime = pulseIn(STEERING_IN, HIGH);
   if(stPulseTime > 0){
-    steering = map(stPulseTime, 500, 3000, 20, 235);
+    steering = map(stPulseTime, 800, 2200, 0, 255);
+    Serial.print("Steering PWM:   ");
+    Serial.print(stPulseTime);
+    Serial.print("\n\n");
     analogWrite(STEERING_OUT, steering);
   }
   
-  //delay(1);  
+  delay(5);  
 }
   
