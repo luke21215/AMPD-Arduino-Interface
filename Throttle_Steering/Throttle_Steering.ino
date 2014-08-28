@@ -77,7 +77,7 @@ void setup(){
 void loop(){
   thPulseTime = pulseIn(THROTTLE_IN, HIGH);
   if(thPulseTime > 0){
-    throttle = map(thPulseTime, 1500, 2000, 35, 67);
+    throttle = map(thPulseTime, 1500, 2000, 35, 80);
     Serial.print("throttle angle:   ");
     Serial.print(throttle);
     Serial.print("\n");
@@ -89,8 +89,12 @@ void loop(){
     Serial.print("Percent throttle:   ");
     Serial.print(pctThrottle);
     Serial.print("\n\n");
-    if(throttle >= 35 && throttle <= 67)
-      Throttle.write(throttle);
+    if(throttle < 35)
+      throttle = 35;
+    if(throttle > 80)
+      throttle = 80;
+    
+    Throttle.write(throttle);
   }
   
   if(pctThrottle < brakeSetpoint)
@@ -104,8 +108,12 @@ void loop(){
     Serial.print("Steering PWM:   ");
     Serial.print(stPulseTime);
     Serial.print("\n\n");
-    if(steering >= 0 && steering <=255)        //only writes valid signals to the steering
-      analogWrite(STEERING_OUT, steering);
+    if(steering < 0)
+      steering = 0;
+    if(steering > 255)
+      steering = 255;  
+      
+    analogWrite(STEERING_OUT, steering);
   }
   
   delay(5);  
