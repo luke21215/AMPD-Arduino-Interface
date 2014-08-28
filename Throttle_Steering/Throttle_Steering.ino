@@ -109,9 +109,9 @@ void loop(){
     Serial.print(stPulseTime);
     Serial.print("\n\n");
     if(steering < 0)
-      steering = 0;
+      steering = 127;
     if(steering > 255)
-      steering = 255;  
+      steering = 127;  
       
     analogWrite(STEERING_OUT, steering);
   }
