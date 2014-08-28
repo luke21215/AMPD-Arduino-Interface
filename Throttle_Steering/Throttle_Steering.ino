@@ -19,20 +19,25 @@
 
 Servo Throttle;
 unsigned int thPulseTime, stPulseTime;
-int throttle, steering, pctThrottle, braking;
+int throttle, steering, pctThrottle, braking, startTime;
 int setStop = 0;       //brake pwm setting 0 for 0% pwm
 int set = 230;         //brake pwm set to 230 for 90% pwm
 int brakeSetpoint = 30;         //setpoint for when the break will apply based on pctThrottle variable set to acitivate at 30%
+boolean timeOut;
+int brakeTime = 50;
 
 //sets the brake unless feed back is alread at 0
 void brakeSet(){  
   digitalWrite(BRAKE_DIR, LOW);
+  startTime = millis();
   
-  while(analogRead(BRAKE_FB) > 30){
+  timeOut = false;
+  while(analogRead(BRAKE_FB) > 30 && !timeOut){
     analogWrite(BRAKE, set);
     Serial.print("Brake Feedback:   ");
     Serial.print(analogRead(BRAKE_FB));
     Serial.print("\n");
+    timeOut = (millis() - startTime) > brakeTime;
   }  
   analogWrite(BRAKE, setStop);
 }
@@ -40,12 +45,15 @@ void brakeSet(){
 //releases the brake to feed back position 900
 void brakeRelease(){
   digitalWrite(BRAKE_DIR, HIGH);
+  startTime = millis();
   
-  while(analogRead(BRAKE_FB) < 900){
+  timeOut = false;
+  while(analogRead(BRAKE_FB) < 900 && !timeOut){
     analogWrite(BRAKE, set);
     Serial.print("Brake Feedback:   ");
     Serial.print(analogRead(BRAKE_FB));
     Serial.print("\n");
+    timeOut = (millis() - startTime) > brakeTime;
   }  
   analogWrite(BRAKE, setStop);
 }
@@ -59,7 +67,7 @@ void setup(){
   pinMode(BRAKE, OUTPUT);
   pinMode(BRAKE_DIR, OUTPUT);
   
-//  brakeSet();
+  brakeSet();
   Throttle.write(35);
   analogWrite(STEERING_OUT, 127);
   delay(5000);
@@ -85,10 +93,10 @@ void loop(){
       Throttle.write(throttle);
   }
   
-//  if(pctThrottle < brakeSetpoint)
-//    brakeSet();
-//  else
-//    brakeRelease();  
+  if(pctThrottle < brakeSetpoint)
+    brakeSet();
+  else
+    brakeRelease();  
   
   stPulseTime = pulseIn(STEERING_IN, HIGH);
   if(stPulseTime > 0){
