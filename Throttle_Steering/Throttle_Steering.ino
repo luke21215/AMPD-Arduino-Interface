@@ -59,7 +59,7 @@ void setup(){
   pinMode(BRAKE, OUTPUT);
   pinMode(BRAKE_DIR, OUTPUT);
   
-  brakeSet();
+//  brakeSet();
   Throttle.write(35);
   analogWrite(STEERING_OUT, 127);
   delay(5000);
@@ -85,10 +85,10 @@ void loop(){
       Throttle.write(throttle);
   }
   
-  if(pctThrottle < brakeSetpoint)
-    brakeSet();
-  else
-    brakeRelease();  
+//  if(pctThrottle < brakeSetpoint)
+//    brakeSet();
+//  else
+//    brakeRelease();  
   
   stPulseTime = pulseIn(STEERING_IN, HIGH);
   if(stPulseTime > 0){
