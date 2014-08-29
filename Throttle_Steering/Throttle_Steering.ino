@@ -26,19 +26,11 @@ int brakeSetpoint = 30;         //setpoint for when the break will apply based o
 boolean timeOut;
 int brakeTime = 50;
 
-
 //sets the brake unless feed back is alread at 0
 void brakeSet(){  
   digitalWrite(BRAKE_DIR, LOW);
   startTime = millis();
   
-<<<<<<< HEAD
-  while(analogRead(BRAKE_FB) > 30){
-    analogWrite(BRAKE, set);
-    Serial.print("Brake FeedBack:   ");
-    Serial.print(analogRead(BRAKE_FB));
-    Serial.print("\n\n");
-=======
   timeOut = false;
   while(analogRead(BRAKE_FB) > 30 && !timeOut){
     analogWrite(BRAKE, set);
@@ -46,7 +38,6 @@ void brakeSet(){
     Serial.print(analogRead(BRAKE_FB));
     Serial.print("\n");
     timeOut = (millis() - startTime) > brakeTime;
->>>>>>> origin/master
   }  
   analogWrite(BRAKE, setStop);
 }
@@ -56,13 +47,6 @@ void brakeRelease(){
   digitalWrite(BRAKE_DIR, HIGH);
   startTime = millis();
   
-<<<<<<< HEAD
-  while(analogRead(BRAKE_FB) < 900){
-    analogWrite(BRAKE, set);
-    Serial.print("Brake FeedBack:   ");
-    Serial.print(analogRead(BRAKE_FB));
-    Serial.print("\n\n");
-=======
   timeOut = false;
   while(analogRead(BRAKE_FB) < 900 && !timeOut){
     analogWrite(BRAKE, set);
@@ -70,7 +54,6 @@ void brakeRelease(){
     Serial.print(analogRead(BRAKE_FB));
     Serial.print("\n");
     timeOut = (millis() - startTime) > brakeTime;
->>>>>>> origin/master
   }  
   analogWrite(BRAKE, setStop);
 }
@@ -84,7 +67,6 @@ void setup(){
   pinMode(BRAKE, OUTPUT);
   pinMode(BRAKE_DIR, OUTPUT);
   
-//  pctThrottle = 50;
   brakeSet();
   Throttle.write(35);
   analogWrite(STEERING_OUT, 127);
@@ -94,30 +76,27 @@ void setup(){
 
 void loop(){
   thPulseTime = pulseIn(THROTTLE_IN, HIGH);
-  if(thPulseTime > 0){
-<<<<<<< HEAD
-    throttle = map(thPulseTime, 1500, 2000, 35, 67);
-=======
-    throttle = map(thPulseTime, 1500, 2000, 35, 80);
->>>>>>> origin/master
-    Serial.print("throttle angle:   ");
-    Serial.print(throttle);
-    Serial.print("\n");
-    pctThrottle = map(thPulseTime, 1500, 2000, 0, 100);
-    if(pctThrottle < 0)
-      pctThrottle = 0;
-    if(pctThrottle > 100)
-      pctThrottle = 100;
-    Serial.print("Percent throttle:   ");
-    Serial.print(pctThrottle);
-    Serial.print("\n\n");
-    if(throttle < 35)
-      throttle = 35;
-    if(throttle > 80)
-      throttle = 80;
-    
-    Throttle.write(throttle);
-  }
+
+  throttle = map(thPulseTime, 1500, 2000, 35, 80);
+  if(throttle < 35)
+    throttle = 35;
+  if(throttle > 80)
+    throttle = 80;  
+  Serial.print("throttle angle:   ");
+  Serial.print(throttle);
+  Serial.print("\n");
+  pctThrottle = map(thPulseTime, 1500, 2000, 0, 100);
+  if(pctThrottle < 0)
+    pctThrottle = 0;
+  if(pctThrottle > 100)
+    pctThrottle = 100;
+  Serial.print("Percent throttle:   ");
+  Serial.print(pctThrottle);
+  Serial.print("\n\n");
+
+  
+  Throttle.write(throttle);
+
   
   if(pctThrottle < brakeSetpoint)
     brakeSet();
@@ -125,22 +104,22 @@ void loop(){
     brakeRelease();  
   
   stPulseTime = pulseIn(STEERING_IN, HIGH);
-  if(stPulseTime > 0){
-    steering = map(stPulseTime, 800, 2200, 0, 255);
-    Serial.print("Steering PWM:   ");
-    Serial.print(stPulseTime);
-    Serial.print("\n\n");
-<<<<<<< HEAD
-=======
-    if(steering < 0)
-      steering = 127;
-    if(steering > 255)
-      steering = 127;  
-      
->>>>>>> origin/master
-    analogWrite(STEERING_OUT, steering);
-  }
+
+  steering = map(stPulseTime, 800, 2200, 0, 255);
+  if(steering < 0)
+    steering = 127;
+  if(steering > 255)
+    steering = 127;    
+  Serial.print("Steering PWM:   ");
+  Serial.print(steering);
+  Serial.print("\n\n");
+
+    
+  analogWrite(STEERING_OUT, steering);
+
   
   delay(5);  
 }
   
+
+
